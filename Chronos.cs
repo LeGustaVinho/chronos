@@ -8,6 +8,7 @@ namespace LegendaryTools.Chronos
     public interface IChronos : IDisposable
     {
         bool IsInitialized { get; }
+        bool WasFirstStart { get; }
         TimeSpan LastElapsedTimeWhileAppIsClosed { get; }
         DateTime LastRecordedDateTimeUtc { get; }
         DateTime NowUtc { get; }
@@ -17,13 +18,28 @@ namespace LegendaryTools.Chronos
         void UpdateUtcNow();
         Task<(bool, DateTime)> GetDateTime();
         Task<(bool, DateTime)> GetDateTimeUtc();
-        void Dispose();
     }
 
     public class Chronos : IChronos
     {
+#if ODIN_INSPECTOR 
+        [Sirenix.OdinInspector.ShowInInspector]
+#endif
         public bool IsInitialized => isInitialized;
+        
+#if ODIN_INSPECTOR 
+        [Sirenix.OdinInspector.ShowInInspector]
+#endif
+        public bool WasFirstStart { get; private set; }
+        
+#if ODIN_INSPECTOR 
+        [Sirenix.OdinInspector.ShowInInspector]
+#endif
         public TimeSpan LastElapsedTimeWhileAppIsClosed { get; private set; }
+        
+#if ODIN_INSPECTOR 
+        [Sirenix.OdinInspector.ShowInInspector]
+#endif
         public DateTime LastRecordedDateTimeUtc
         {
             get => DateTime.ParseExact(
@@ -36,7 +52,10 @@ namespace LegendaryTools.Chronos
                 PlayerPrefs.SetString(LastRecordedDateTimeKey, value.ToString("o", CultureInfo.InvariantCulture));
             }
         }
-        
+
+#if ODIN_INSPECTOR 
+        [Sirenix.OdinInspector.ShowInInspector]
+#endif
         public DateTime NowUtc => LastRecordedDateTimeUtc.AddSeconds(Time.unscaledTimeAsDouble - lastUnscaledTimeAsDouble);
 
         private readonly ChronosConfig config;
@@ -53,6 +72,9 @@ namespace LegendaryTools.Chronos
         public event Action<TimeSpan> ElapsedTimeWhileAppWasPause;
         public event Action<TimeSpan> ElapsedTimeWhileAppLostFocus;
         
+#if ODIN_INSPECTOR 
+        [Sirenix.OdinInspector.ShowInInspector]
+#endif
         private bool FirstStart
         {
             get => System.Convert.ToBoolean(PlayerPrefs.GetInt(FirstStartKey, 1));
@@ -70,21 +92,22 @@ namespace LegendaryTools.Chronos
 
         public async Task Initialize()
         {
-            (bool, DateTime) result = await GetDateTimeUtc();
+            (bool, DateTime) currentTime = await GetDateTimeUtc();
 
             if (FirstStart)
             {
                 LastElapsedTimeWhileAppIsClosed = TimeSpan.Zero;
-                LastRecordedDateTimeUtc = result.Item2;
+                LastRecordedDateTimeUtc = currentTime.Item2;
                 FirstStart = false;
+                WasFirstStart = true;
                 isInitialized = true;
             }
             else
             {
-                if (result.Item2 > LastRecordedDateTimeUtc)
+                if (currentTime.Item2 > LastRecordedDateTimeUtc)
                 {
-                    LastElapsedTimeWhileAppIsClosed = result.Item2 - LastRecordedDateTimeUtc;
-                    LastRecordedDateTimeUtc = result.Item2;
+                    LastElapsedTimeWhileAppIsClosed = currentTime.Item2 - LastRecordedDateTimeUtc;
+                    LastRecordedDateTimeUtc = currentTime.Item2;
                     isInitialized = true;
                 }
             }
@@ -95,15 +118,19 @@ namespace LegendaryTools.Chronos
             (bool, DateTime) result = await GetDateTimeUtc();
             if (result.Item2 > LastRecordedDateTimeUtc)
             {
-                LastElapsedTimeWhileAppIsClosed = result.Item2 - LastRecordedDateTimeUtc;
                 LastRecordedDateTimeUtc = result.Item2;
             }
         }
-        
+
+#if ODIN_INSPECTOR 
+        [Sirenix.OdinInspector.Button]
+#endif
         private void OnApplicationFocus(bool hasFocus)
         {
             if (hasFocus)
             {
+                Debug.Log($"OnApplicationFocus({hasFocus}) Time between lose focus {Time.unscaledTimeAsDouble - lastUnscaledTimeAsDoubleSinceLoseFocus} seconds");
+                
                 if(IsInitialized)
                     ElapsedTimeWhileAppLostFocus?.Invoke(TimeSpan.FromSeconds(Time.unscaledTimeAsDouble - lastUnscaledTimeAsDoubleSinceLoseFocus));
             }
@@ -111,8 +138,13 @@ namespace LegendaryTools.Chronos
             {
                 lastUnscaledTimeAsDoubleSinceLoseFocus = Time.unscaledTimeAsDouble;
             }
+            
+            Debug.Log($"OnApplicationFocus({hasFocus}) -> {NowUtc}");
         }
-        
+
+#if ODIN_INSPECTOR 
+        [Sirenix.OdinInspector.Button]
+#endif
         private void OnApplicationPause(bool isPaused)
         {
             if (isPaused)
@@ -122,9 +154,12 @@ namespace LegendaryTools.Chronos
             }
             else
             {
+                Debug.Log($"OnApplicationPause({isPaused}) Time between pause {Time.unscaledTimeAsDouble - lastUnscaledTimeAsDoubleSinceGamePaused} seconds");
                 if(IsInitialized)
                     ElapsedTimeWhileAppWasPause?.Invoke(TimeSpan.FromSeconds(Time.unscaledTimeAsDouble - lastUnscaledTimeAsDoubleSinceGamePaused));
             }
+            
+            Debug.Log($"OnApplicationPause({isPaused}) -> {NowUtc}");
         }
 
         public async Task<(bool, DateTime)> GetDateTime()
