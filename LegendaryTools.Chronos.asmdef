@@ -1,0 +1,17 @@
+{
+    "name": "LegendaryTools.Chronos",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2247f345c1389cb428906dc038800b93",
+        "GUID:d962d0b942a7fff4092f4dbd41f1907f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

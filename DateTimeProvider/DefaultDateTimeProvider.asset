@@ -9,9 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb68dfbd97ba445586d86a8dfe5cbbc6, type: 3}
-  m_Name: ChronosConfig
+  m_Script: {fileID: 11500000, guid: 3bbf26e91f764c3387b9063ff9e51c20, type: 3}
+  m_Name: DefaultDateTimeProvider
   m_EditorClassIdentifier: 
-  ProviderTimeOut: 0
-  WaterfallProviders:
-  - {fileID: 11400000, guid: 930d6c95a94daad44afcd1ac2ea5b9c7, type: 2}
+  TimeOut: 0

@@ -11,8 +11,9 @@
     "url": "git+https://github.com/LeGustaVinho/chronos.git"
   },
   "dependencies": {
-	"com.legustavinho.legendary-tools-monobehaviour-facade": "1.0.2",
-    "com.legustavinho.legendary-tools-common": "1.0.10"
+    "com.legustavinho.legendary-tools-monobehaviour-facade": "1.0.2",
+	"com.legustavinho.legendary-tools-common": "1.1.2",
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
   },
   "author": {
     "name": "LeGustaVinho",
